@@ -7,13 +7,13 @@ main =
   someFunc
 
 countToGray :: Binary -> Int -> IO ()
-countToGray _ 0 = return ()
+countToGray _ (-1) = return ()
 countToGray bits n = do
   putStrLn $ bitString $ bits
   countToGray (incGray bits) (n-1)
 
 countTo :: Binary -> Int -> IO ()
-countTo _ 0 = return ()
+countTo _ (-1) = return ()
 countTo bits n = do
   putStrLn $ bitString $ bits
   countTo (inc bits) (n-1)
@@ -52,7 +52,7 @@ fib :: Int -> Int
 fib n | n < 2 = 1
 fib n = fib (n-1) + fib (n-2)
 
-type Binary = [Bool]
+type Binary = [Bit]
 type Bit = Bool
 
 inc :: Binary -> Binary
@@ -64,8 +64,6 @@ inc bits = (inc ( init bits)) ++ [False]
 bitString :: Binary -> String
 bitString [] = ""
 bitString bits = (bitToString (head bits)) ++ (bitString (tail bits))
--- bitString bits | head bits == True = "1" ++ (bitString (tail bits))
--- bitString bits | head bits == False = "0" ++ (bitString (tail bits))
 
 addParityBit :: Binary -> Binary
 addParityBit bits | ((mod (length (filter (True ==) bits)) 2) == 0) = (bits ++ [True])
@@ -99,3 +97,37 @@ allFalse [] = True
 allFalse [x] = not x
 allFalse (True:_) = False
 allFalse (False:xs) = allFalse xs
+
+binaryToGray :: Binary -> Binary
+binaryToGray xs = (head xs) : (binaryToGray' (xs))
+
+binaryToGray' :: Binary -> Binary
+binaryToGray' [_] = []
+binaryToGray' (x:x':xs) = (xor x x') : binaryToGray' (x':xs)
+
+grayToBinary :: Binary -> Binary
+grayToBinary bits = grayToBinary' False bits
+
+grayToBinary' :: Bit -> Binary -> Binary
+grayToBinary' bit [x] = [xor bit x]
+grayToBinary' bit (x:xs) = new : (grayToBinary' new xs)
+  where new = (xor bit x)
+
+xor :: Bool -> Bool -> Bool
+xor a b = a /= b
+
+
+--iterative solution to towers of hanoi
+
+--  1.  calculate the total number of moves required
+--      2^n, where n is number of disks
+
+--  2.  is n is even, swap dest and aux pegs
+
+--  3.  for i = (1..n)
+--        if i%3 == 1
+--          move top disk from src pole to dest pole
+--        if i%3 == 2
+--          move top disk from src pole to aux pole
+--        if i%3 == 0
+--          mve top disk between aux and dest
