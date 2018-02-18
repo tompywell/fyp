@@ -116,6 +116,9 @@ grayToBinary' bit (x:xs) = new : (grayToBinary' new xs)
 xor :: Bool -> Bool -> Bool
 xor a b = a /= b
 
+ruler :: Int -> Int
+ruler n | (mod n 2) == 1 = 0
+ruler n = 1 + ruler (quot n 2)
 
 --iterative solution to towers of hanoi
 
