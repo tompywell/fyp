@@ -105,6 +105,16 @@ binaryToGray' :: Binary -> Binary
 binaryToGray' [_] = []
 binaryToGray' (x:x':xs) = (xor x x') : binaryToGray' (x':xs)
 
+binaryToGrayAlt :: Binary -> Binary
+binaryToGrayAlt binary = xor' binary (rShift binary)
+
+rShift :: Binary -> Binary
+rShift [] = []
+rShift xs = False : init xs
+
+lShift :: Binary -> Binary
+lShift (x:xs) = xs ++ [False]
+
 grayToBinary :: Binary -> Binary
 grayToBinary bits = grayToBinary' False bits
 
@@ -115,6 +125,11 @@ grayToBinary' bit (x:xs) = new : (grayToBinary' new xs)
 
 xor :: Bool -> Bool -> Bool
 xor a b = a /= b
+
+xor' :: Binary -> Binary ->Binary
+xor' [] _ = []
+xor' _ [] = []
+xor' (x:xs) (y:ys) = (xor x y) : (xor' xs ys)
 
 ruler :: Int -> Int
 ruler n | (mod n 2) == 1 = 0
