@@ -136,8 +136,13 @@ xor' _ [] = []
 xor' (x:xs) (y:ys) = (xor x y) : (xor' xs ys)
 
 ruler :: Int -> Int
-ruler n | (mod n 2) == 1 = 0
+ruler n | (mod n 2) == 1 = 1
 ruler n = 1 + ruler (quot n 2)
+
+primes :: [Int]
+primes = sieve [2..]
+
+sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p > 0]
 
 --iterative solution to towers of hanoi
 
