@@ -55,9 +55,13 @@ fib n = fib (n-1) + fib (n-2)
 type Binary = [Bit]
 type Bit = Bool
 
+incBinary :: Binary -> Binary
+incBinary [] = [True]
+incBinary xs | last xs == False = init xs ++ [True]
+incBinary xs = (incBinary $ init xs) ++ [False]
+
 inc :: Binary -> Binary
-inc [True] = [True, False]
-inc [False] = [True]
+inc [] = [True]
 inc bits | last bits == False = init bits ++ [True]
 inc bits = (inc ( init bits)) ++ [False]
 
