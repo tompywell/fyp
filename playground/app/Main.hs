@@ -63,7 +63,7 @@ incBinary xs = (incBinary $ init xs) ++ [False]
 inc :: Binary -> Binary
 inc [] = [True]
 inc bits | last bits == False = init bits ++ [True]
-inc bits = (inc ( init bits)) ++ [False]
+inc bits = (inc $ init bits) ++ [False]
 
 bitString :: Binary -> String
 bitString [] = ""
@@ -143,6 +143,15 @@ primes :: [Int]
 primes = sieve [2..]
 
 sieve (p:xs) = p : sieve [x | x <- xs, x `mod` p > 0]
+
+count :: Int -> [Binary]
+count 0 = []
+count 1 = [[False],[True]]
+count n = (addHead False (count (n-1))) ++ (addHead True (count (n-1)))
+
+addHead :: Bit -> [Binary] -> [Binary]
+addHead b [] = []
+addHead b (x:xs) = (b:x) : addHead b xs
 
 --iterative solution to towers of hanoi
 
