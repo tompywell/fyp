@@ -113,24 +113,55 @@ state = ("aa", (hanoi, "bb", []))
 --            current graph   goal     path
 type State = (String, (Graph, String, [Vertex]))
 
-findRoute :: State -> IO ()
-findRoute (current, (graph, goal, path))
-  | current == goal = putStrLn $ ("path found") ++ show (map vertexLabel (path ++ graphVertexes graph [current]))
-  | otherwise = do
-      --putStrLn ("current = " ++ current)
-      let currentVertex = head (graphVertexes graph [current])
-      --putStrLn ("currentVertex = " ++ show currentVertex)
-      let neighboursOfCurrentAsVertexes = graphVertexes graph (vertexNeighbors currentVertex)
-      --putStrLn ("neighbours = " ++ show (map vertexLabel neighboursOfCurrentAsVertexes))
-      --let unvisited = remove' path neighboursOfCurrentAsVertexes
-      let unvisited = [x | x <- neighboursOfCurrentAsVertexes, not $ elem (vertexLabel x) (map vertexLabel path)]
-      --putStrLn ("unvisited neighbours = " ++ show (map vertexLabel unvisited))
-      let newPath = path ++ [currentVertex]
-      --putStrLn ("path = " ++ show (map vertexLabel newPath))
-      let newStates = zip (map vertexLabel unvisited) (repeat (graph, goal, newPath))
-      --putStrLn ("newStates = " ++ show newStates)
-      mapM_ findRoute newStates
-      return ()
+-- findRoutes :: State -> IO ()
+-- findRoutes (current, (graph, goal, path))
+--   | current == goal = putStrLn $ ("path found") ++ show (map vertexLabel (path ++ graphVertexes graph [current]))
+--   | otherwise = do
+--       let currentVertex = head (graphVertexes graph [current])
+--       let neighboursOfCurrentAsVertexes = graphVertexes graph (vertexNeighbors currentVertex)
+--       let unvisited = [x | x <- neighboursOfCurrentAsVertexes, not $ elem (vertexLabel x) (map vertexLabel path)]
+--       let newPath = path ++ [currentVertex]
+--       let newStates = zip (map vertexLabel unvisited) (repeat (graph, goal, newPath))
+--       mapM_ findRoutes newStates
+--       return ()
+
+type Path = [Vertex]
+
+printPaths :: [Path] -> IO ()
+printPaths [] = return ()
+printPaths (x:xs) = do
+  putStrLn "PATHSTART"
+  printPath x
+  putStrLn "PATHEND"
+  printPaths xs
+
+printPath :: Path -> IO()
+printPath [] = return ()
+printPath (x:xs) = do
+  putStrLn $ vertexLabel x
+  printPath xs
+
+findPaths :: State -> [Path]
+findPaths (current, (graph, goal, path))
+  | current == goal = [path ++ [head (graphVertexes graph [current])]]
+  | otherwise = foldl (++) [] (map findPaths newStates)
+      where
+        -- get the current vertex as a vertex from its label
+        currentVertex = head (graphVertexes graph [current])
+        -- make a list of all the current vertexes direct neighbours
+        neighboursOfCurrentAsVertexes = graphVertexes graph (vertexNeighbors currentVertex)
+        -- remove already visited vertexes from the list to remove cycles in the graph
+        unvisited = [x | x <- neighboursOfCurrentAsVertexes, not $ elem (vertexLabel x) (map vertexLabel path)]
+        -- add the current vertex to the path so far
+        newPath = path ++ [currentVertex]
+        -- try to find a path to the goal from all the current vertexes neighbours
+        newStates = zip (map vertexLabel unvisited) (repeat (graph, goal, newPath))
+
+shortestPath :: [Path] -> Path
+shortestPath [x] = x
+shortestPath (x:xs)
+  | (length x) <= length (shortestPath xs) = x
+  | otherwise = shortestPath xs
 
 remove' :: [Vertex] -> [Vertex] -> [Vertex]
 remove' [] ys = ys
