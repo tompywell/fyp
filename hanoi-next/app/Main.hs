@@ -24,7 +24,6 @@ stateToBinary' (x:xs) previousPeg previousBit = currentBit : (stateToBinary' (xs
 
 --once we know the move number, we can find out which peg the next move will be from and to
 
--
 magic :: Binary -> (Int, Int)
 magic binary = (from, to)
   where
@@ -34,6 +33,13 @@ magic binary = (from, to)
 
 binaryToInt :: Binary -> Int
 binaryToInt bits = binaryToInt' 0 (reverse bits)
+
+intToBinary :: Int -> Int -> Binary
+--intToBinary _ 0 = []
+intToBinary _ 0 = []
+intToBinary x n
+  | quot x (2^(n-1)) > 0 = True : intToBinary (mod x (2^(n-1))) (n-1)
+  | otherwise = False : intToBinary x (n-1)
 
 binaryToInt' :: Int -> Binary -> Int
 binaryToInt' _ [] = 0
