@@ -108,7 +108,7 @@ hanoi = Graph [
     , Vertex "cc" ["ac", "bc"        ] 0
   ]
 
-state = ("aa", (hanoi, "bb", []))
+state = ("ca", (hanoi, "cc", []))
 
 --            current graph   goal     path
 type State = (String, (Graph, String, [Vertex]))
