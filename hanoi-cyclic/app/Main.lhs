@@ -4,7 +4,7 @@
 > import Data.Bits
 
 > main :: IO ()
-> main = prettyPrint $ map moveToCyclic (hanoi 20)
+> main = prettyPrint $ map moveToCyclic (hanoi 4)
 
 > type Direction = String
 
