@@ -1,4 +1,4 @@
-in  module Main where
+module Main where
 
 import Lib
 

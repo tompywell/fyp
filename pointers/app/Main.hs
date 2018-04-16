@@ -92,9 +92,3 @@ getRight (Node _ _ r) = r
 isEmpty :: Tree -> Bool
 isEmpty Empty = True
 isEmpty _ = False
-
---emptyTree :: IO (IORef Tree)
---emptyTree = do
---  newIORef Empty
-  --tree <- newIORef (Empty)
-  --return tree

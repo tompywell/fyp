@@ -139,6 +139,23 @@ ruler :: Int -> Int
 ruler n | (mod n 2) == 1 = 1
 ruler n = 1 + ruler (quot n 2)
 
+intToBinary :: Int -> Binary
+intToBinary 0 = []
+intToBinary x = (intToBinary (div x 2)) ++ [mod x 2 == 1]
+
+ruler' :: Int -> Int
+ruler' x = rightmostOne $ intToBinary x
+
+rightmostOne :: Binary -> Int
+rightmostOne xs
+  | (not $ last xs) = 1 + (rightmostOne $ init xs)
+  | otherwise = 1
+
+leftmostOne :: Binary -> Int
+leftmostOne [True] = 1
+leftmostOne (False:xs) = leftmostOne xs
+leftmostOne (True:xs) = 1 + length xs
+
 primes :: [Int]
 primes = sieve [2..]
 
@@ -152,6 +169,16 @@ count n = (addHead False (count (n-1))) ++ (addHead True (count (n-1)))
 addHead :: Bit -> [Binary] -> [Binary]
 addHead b [] = []
 addHead b (x:xs) = (b:x) : addHead b xs
+
+grayCodes :: Int -> [Binary]
+grayCodes 0 = [[]]
+grayCodes n = grayAddBit $ grayCodes (n-1)
+
+grayAddBit :: [Binary] -> [Binary]
+grayAddBit previous = firstHalf ++ secondHalf
+  where
+    firstHalf = map (\x -> False : x) previous
+    secondHalf = map (\x -> True : x) (reverse previous)
 
 --iterative solution to towers of hanoi
 
