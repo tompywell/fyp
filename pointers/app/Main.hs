@@ -7,7 +7,7 @@ import System.IO.Unsafe
 main :: IO ()
 main = do
   myTree <- newIORef Empty --create the pointer tree with no nodes
-  mapM (\x -> insert myTree x) [4,2,6,1,3,5,7] --insert all these values into the binary tree
+  mapM (insert myTree) [4,2,6,1,3,5,7] --insert all these values into the binary tree
   print myTree  --a very basic 'pretty print' of the tree
   morris myTree --an in-order traversal of the tree
 
