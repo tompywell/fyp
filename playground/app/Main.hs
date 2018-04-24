@@ -62,8 +62,9 @@ incBinary xs = (incBinary $ init xs) ++ [False]
 
 inc :: Binary -> Binary
 inc [] = [True]
-inc bits | last bits == False = init bits ++ [True]
-inc bits = (inc $ init bits) ++ [False]
+inc bits
+  | last bits == False = init bits ++ [True]
+  | otherwise = (inc $ init bits) ++ [False]
 
 bitString :: Binary -> String
 bitString [] = ""
@@ -172,7 +173,16 @@ addHead b (x:xs) = (b:x) : addHead b xs
 
 grayCodes :: Int -> [Binary]
 grayCodes 0 = [[]]
-grayCodes n = grayAddBit $ grayCodes (n-1)
+grayCodes n = firstHalf ++ secondHalf
+  where
+    previous = grayCodes (n-1)
+    firstHalf = map (\x -> False : x) previous
+    secondHalf = map (\x -> True : x) (reverse previous)
+
+binaryNBits :: Int -> [Binary]
+binaryNBits 0 = [[]]
+binaryNBits n = map (\x -> False : x) (binaryNBits $ n-1) ++
+                map (\x -> True : x) (binaryNBits $ n-1)
 
 grayAddBit :: [Binary] -> [Binary]
 grayAddBit previous = firstHalf ++ secondHalf

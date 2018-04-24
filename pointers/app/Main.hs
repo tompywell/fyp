@@ -7,7 +7,7 @@ import System.IO.Unsafe
 main :: IO ()
 main = do
   myTree <- newIORef Empty --create the pointer tree with no nodes
-  mapM (insert myTree) [4,2,6,1,3,5,7] --insert all these values into the binary tree
+  mapM (insert myTree) [5,7,2,8,4,9,1,3,6] --insert all these values into the binary tree
   print myTree  --a very basic 'pretty print' of the tree
   morris myTree --an in-order traversal of the tree
 
@@ -15,7 +15,7 @@ data Tree = Empty
           | Node (IORef Tree) Int (IORef Tree)
 
 instance Show Tree where
-  show Empty = "-"
+  show Empty = "."
   show (Node left val right) = "(" ++ (show left) ++ (show val) ++ (show right) ++ ")"
 
 instance (Show a) => Show (IORef a) where
@@ -43,7 +43,7 @@ morris t = do
       left <- readIORef l
       if (isEmpty left)
         then do
-          print v
+          putStr $ (show v) ++ " "
           morris r
         else do
           preRef <- p
@@ -56,9 +56,10 @@ morris t = do
               morris l
             else do
               setRightToNull preRef
-              print v
+              putStr $ (show v) ++ " "
               morris r
-    else
+    else do
+      putStrLn ""
       return ()
 
 setRightToNull :: IORef Tree -> IO ()
