@@ -3,13 +3,15 @@ module Main where
 import Lib
 import Data.IORef
 import System.IO.Unsafe
+import Control.Monad
 
 main :: IO ()
 main = do
   myTree <- newIORef Empty --create the pointer tree with no nodes
-  mapM (insert myTree) [5,7,2,8,4,9,1,3,6] --insert all these values into the binary tree
+  mapM (insert myTree) [8,4,12,2,6,10,14,1,3,5,7,9,11,13,15] --insert all these values into the binary tree
   print myTree  --a very basic 'pretty print' of the tree
   morris myTree --an in-order traversal of the tree
+  prettyPrint myTree
 
 data Tree = Empty
           | Node (IORef Tree) Int (IORef Tree)
@@ -20,6 +22,29 @@ instance Show Tree where
 
 instance (Show a) => Show (IORef a) where
   show a = show (unsafePerformIO (readIORef a))
+
+prettyPrint :: IORef Tree -> IO ()
+prettyPrint tree = prettyPrint' tree 0
+
+prettyPrint' :: IORef Tree -> Int -> IO ()
+prettyPrint' tree n = do
+  node <- readIORef tree
+  if (isEmpty node)
+    then return ()
+    else do
+      let (l, v, r) = (getLeft node, getVal node, getRight node)
+      leftTree <- readIORef l
+      rightTree <- readIORef r
+      indent n
+      putStrLn $ show v
+      when (not (isEmpty leftTree)) (prettyPrint' l (n+1))
+      when (not (isEmpty rightTree)) (prettyPrint' r (n+1))
+
+indent :: Int -> IO ()
+indent 0 = return ()
+indent n = do
+  putStr "| "
+  indent (n-1)
 
 insert :: IORef Tree -> Int -> IO ()
 insert r v = do

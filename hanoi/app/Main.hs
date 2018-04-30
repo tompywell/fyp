@@ -18,3 +18,10 @@ hanoi n src dest aux =
 
 countMoves :: Integer -> IO ()
 countMoves n =  putStrLn $ show $ length $ hanoi n "a" "b" "c"
+
+disks :: Int -> [Int]
+disks 0 = []
+disks n =
+  disks (n-1) ++
+  [n] ++
+  disks (n-1)

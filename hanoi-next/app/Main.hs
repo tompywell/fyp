@@ -4,23 +4,24 @@ import Lib
 
 main :: IO ()
 main = do
-  let currentState = "bba"
+  let currentState = "aaa"
   let goalPeg = 'c'
   let goalDirection = "clockwise"
   --printPeg currentState goalPeg goalDirection
   --printDirection currentState goalPeg goalDirection
-  --mapM (\x -> printPeg x goalPeg goalDirection) optimalStates
-  mapM (\x -> printDirection x goalPeg goalDirection) optimalStates
+  --mapM (\x -> printPeg x goalPeg goalDirection) intermediateStates
+  mapM (\x -> printDirection x goalPeg goalDirection) intermediateStates
   return ()
 
-optimalStates = ["bba", "bbc", "abc", "acc"]
+-- "ccc" is left out as we won't move from there
+intermediateStates = ["bba", "bbc", "abc", "acc"]
 
 --printPeg: currentState -> goalPeg -> goalDirection
 printPeg :: State -> Peg -> Direction -> IO ()
 printPeg s p d = do
   let binary = stateToBinary s p
   let nextMove = increment binary
-  let (from, to) = magic nextMove
+  let (from, to) = fromTo nextMove
   let disk = ruler $ binaryToInt nextMove
   let diskDirection = direction (length s) disk
   let directionString = if (diskDirection == 1) then d else invert d
@@ -31,14 +32,12 @@ printPeg s p d = do
 --printDirection: currentState -> goalPeg -> goalDirection
 printDirection :: State -> Peg -> Direction -> IO ()
 printDirection s p d = do
-  let binary = stateToBinary s p
-  let nextMove = increment binary
-  let (from, to) = magic nextMove
-  let disk = ruler $ binaryToInt nextMove
-  let diskDirection = direction (length s) disk
-  let directionString = if (diskDirection == 1) then d else invert d
-  --print ("move disk " ++ (show disk) ++ " from peg " ++ (show from) ++ " to peg " ++ (show to))
-  print ("move disk " ++ (show disk) ++ " " ++ directionString)
+  let current = stateToBinary s p
+  let next = increment current
+  let diskToMove = ruler $ binaryToInt next
+  let relativeDirection = direction (length s) diskToMove
+  let directionToMove = if (relativeDirection == 1) then d else invert d
+  print ("move disk " ++ (show diskToMove) ++ " " ++ directionToMove)
   return ()
 
 type Bit = Bool
@@ -63,19 +62,19 @@ invert "anti-clockwise" = "clockwise"
 
 stateToBinary' :: State -> Peg -> Bit -> Binary
 stateToBinary' [] _ _ = []
-stateToBinary' (x:xs) previousPeg previousBit = currentBit : (stateToBinary' (xs) currentPeg currentBit)
-  where
-    currentPeg = x
-    currentBit = if (currentPeg == previousPeg) then previousBit else not previousBit
+stateToBinary' (x:xs) prePeg preBit = currentBit : (stateToBinary' (xs) x currentBit)
+  where currentBit = if (x == prePeg) then preBit else not preBit
 
 --once we know the move number, we can find out which peg the next move will be from and to
 
-magic :: Binary -> (Int, Int)
-magic binary = (from, to)
-  where
-    -- from peg (m & m - 1) % 3 to peg ((m | m - 1) + 1) % 3
-    from = (binaryToInt (bitwise (&&) binary (decrement binary))) `mod` 3
-    to = (binaryToInt (increment (bitwise (||) binary (decrement binary)))) `mod` 3
+fromTo :: Binary -> (Int, Int)
+fromTo x = (from x, to x)
+
+from :: Binary -> Int
+from x = (binaryToInt (bitwise (&&) x (decrement x))) `mod` 3
+
+to :: Binary -> Int
+to x = (binaryToInt (increment (bitwise (||) x (decrement x)))) `mod` 3
 
 binaryToInt :: Binary -> Int
 binaryToInt bits = binaryToInt' 0 (reverse bits)

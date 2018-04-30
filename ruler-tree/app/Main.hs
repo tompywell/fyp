@@ -28,10 +28,10 @@ bf tree = bf' [tree]
 
 bf' :: [Tree] -> [Int]
 bf' [] = []
-bf' xs = map getVal xs ++ bf' (poon xs)
+bf' xs = map getVal xs ++ bf' (foo xs)
 
-poon :: [Tree] -> [Tree]
-poon trees = concat (map children trees)
+foo :: [Tree] -> [Tree]
+foo trees = concat (map children trees)
   where
     children (Node l _ r) =
       (if l == Empty then [] else [l]) ++ (if r == Empty then [] else [r])

@@ -5,125 +5,78 @@ import Lib
 data Vertex = Vertex {
                           vertexLabel :: [Char]
                         , vertexNeighbors :: [[Char]]
-                        , vertexDistance :: Int
-                        --, vertexPredecessor :: [Char]
                       } deriving (Show)
 
 -- We define a graph as a list of vertexes.
--- Each vertex is a label, an adjacency list (neighbors),
--- a distance away from the root, and a predecessor label.
+-- Each vertex is a label, and neighbours.
 data Graph = Graph [Vertex] deriving (Show)
 
 -- Takes in a vertex, a list of vertexes, and returns true or false.
 vertexInVertexes :: Vertex -> [Vertex] -> Bool
--- Given an empty list of vertices, return false.
 vertexInVertexes _ [] = False
--- Reduce the list of vertexes to a bool.
 -- If at least one vertex label in the list matches the input vertex label, the result will be true.
 vertexInVertexes Vertex {vertexLabel = label} (x:y) = foldl (\ acc x -> vertexLabel x == label || acc) False (x:y)
 
--- Takes a graph, a list of strings, and outputs a list of vertexes.
 graphVertexes :: Graph -> [[Char]]-> [Vertex]
--- Empty graph.
 graphVertexes (Graph []) _ = []
 graphVertexes (Graph (x:y)) [] = x : y
--- The vertex label is an element in the list of labels (keys).
 graphVertexes (Graph (x:y)) keys = filter (\ z -> vertexLabel z `elem` keys) (x:y)
 
---     In       Out      Queue       Seen        Out
-bfs :: Graph -> Graph -> [Vertex] -> [Vertex] -> Graph
-bfs (Graph []) _ _ _ = Graph []
--- If the queue is empty, output the breadth-first search tree (graph).
-bfs _ outGraph [] _ = outGraph
-bfs (Graph (a:b)) (Graph (c:d)) (e:f) (g:h) = bfs inGraph outGraph queue seen'
-    where inGraph = Graph (a:b)
-          -- Get the current vertex label.
-          eLabel = vertexLabel e
-          -- Get the list of labels that are the neighbors of the current vertex.
-          eNeighbors = vertexNeighbors e
-          -- Get the vertexes from the vertex neighbor labels.
-          eVertexNeighbors = graphVertexes inGraph eNeighbors
-          -- The current distance, for the current vertex neighbors, is one more then
-          -- the distance the current vertex is at.
-          dist = vertexDistance e + 1
-          -- Seen is the vertexes that have been queued before.
-          seen = g : h
-          -- Remove all neighbors, to the current vertex, that have
-          -- been queued up before.
-          filteredNeighbors = filterVertexNeighbors seen eVertexNeighbors
-          -- Update the predecessor label and distance for each current vertex neighbor.
-          enqueue = updateDistPred filteredNeighbors dist eLabel
-          -- Update our breadth-first search tree/graph.
-          outGraph = Graph $ (c:d) ++ enqueue
-          -- Add the neighbors to the queue.
-          queue = f ++ enqueue
-          -- Update seen with the enqueued vertexes.
-          seen' = seen ++ enqueue
-
-filterVertexNeighbors :: [Vertex] -> [Vertex] -> [Vertex]
--- If either `s` (seen) or `vn` (vertex neighbors) are empty, return an empty list.
-filterVertexNeighbors _ [] = []
-filterVertexNeighbors [] _ = []
--- Filter out all vertexes in `vn` that are also in `s`.
-filterVertexNeighbors s vn = filter (\ x -> not $ vertexInVertexes x s) vn
-
-          -----------------------------------------------------------------------------
-
-updateDistPred :: [Vertex] -> Int -> [Char] -> [Vertex]
-updateDistPred [] _ _ = []
--- Go though each vertex and swap the current distance and predecessor labels with the new parameters.
-updateDistPred (x:y) dist predLabel = map (\ (Vertex label n _) -> Vertex label n dist) (x:y)
-
--- The main entry point for the program.
 main :: IO ()
 main = do
-  -- Create a graph of nine vertexes.
-  let inGraph = Graph [
-                  Vertex "aa" ["ba", "ca"        ] 0
-                , Vertex "ab" ["bb", "ac", "cb"  ] 0
-                , Vertex "ac" ["bc", "ab", "cc"  ] 0
-                , Vertex "ba" ["aa", "ca", "bc"  ] 0
-                , Vertex "bb" ["ab", "cb"        ] 0
-                , Vertex "bc" ["ac", "cc", "ba"  ] 0
-                , Vertex "ca" ["cb", "aa", "ba"  ] 0
-                , Vertex "cb" ["ab", "bb", "ca"  ] 0
-                , Vertex "cc" ["ac", "bc"        ] 0
-                ]
-  -- Start the queue off with the starting vertex/root.
-  let queue = graphVertexes inGraph ["aa"]
-  let outGraph = Graph queue
-  let seen = queue
-  printGraph $ bfs inGraph outGraph queue seen
+  let startState = "bba"
+  let goalState = "bbb"
+  let graph = threeDisk
+  let state = (startState, (graph, goalState, []))
+  printPath $ shortestPath $ findPaths state
   return ()
 
-hanoi = Graph [
-      Vertex "aa" ["ba", "ca"        ] 0
-    , Vertex "ab" ["bb", "ac", "cb"  ] 0
-    , Vertex "ac" ["bc", "ab", "cc"  ] 0
-    , Vertex "ba" ["aa", "ca", "bc"  ] 0
-    , Vertex "bb" ["ab", "cb"        ] 0
-    , Vertex "bc" ["ac", "cc", "ba"  ] 0
-    , Vertex "ca" ["cb", "aa", "ba"  ] 0
-    , Vertex "cb" ["ab", "bb", "ca"  ] 0
-    , Vertex "cc" ["ac", "bc"        ] 0
-  ]
+-- twoDisk = Graph [
+--       Vertex "aa" ["ba", "ca"        ] 0
+--     , Vertex "ab" ["bb", "ac", "cb"  ] 0
+--     , Vertex "ac" ["bc", "ab", "cc"  ] 0
+--     , Vertex "ba" ["aa", "ca", "bc"  ] 0
+--     , Vertex "bb" ["ab", "cb"        ] 0
+--     , Vertex "bc" ["ac", "cc", "ba"  ] 0
+--     , Vertex "ca" ["cb", "aa", "ba"  ] 0
+--     , Vertex "cb" ["ab", "bb", "ca"  ] 0
+--     , Vertex "cc" ["ac", "bc"        ] 0
+--   ]
 
-state = ("ca", (hanoi, "cc", []))
+threeDisk = Graph [
+      Vertex "aaa" ["baa", "caa"]
+    , Vertex "caa" ["aaa", "baa", "cba"]
+    , Vertex "baa" ["aaa", "caa", "bca"]
+    , Vertex "bca" ["baa", "cca", "aca"]
+    , Vertex "cba" ["caa", "aba", "bba"]
+    , Vertex "cca" ["bca", "aca", "ccb"]
+    , Vertex "aca" ["bca", "cca", "aba"]
+    , Vertex "aba" ["aca", "cba", "bba"]
+    , Vertex "bba" ["cba", "aba", "bbc"]
+    --
+    , Vertex "ccb" ["cca", "acb", "bcb"]
+    , Vertex "bbc" ["bba", "cbc", "abc"]
+    , Vertex "acb" ["ccb", "bcb", "abb"]
+    , Vertex "bcb" ["ccb", "acb", "bab"]
+    , Vertex "cbc" ["bbc", "cac", "abc"]
+    , Vertex "abc" ["bbc", "cbc", "acc"]
+    , Vertex "abb" ["acb", "bbb", "cbb"]
+    , Vertex "bab" ["bcb", "cab", "aab"]
+    , Vertex "cac" ["cbc", "aac", "bac"]
+    --
+    , Vertex "acc" ["abc", "bcc", "ccc"]
+    , Vertex "bbb" ["abb", "cbb"]
+    , Vertex "cbb" ["abb", "bbb", "cab"]
+    , Vertex "cab" ["bab", "cbb", "aab"]
+    , Vertex "aab" ["bab", "cab", "aac"]
+    , Vertex "aac" ["aab", "cac", "bac"]
+    , Vertex "bac" ["cac", "aac", "bcc"]
+    , Vertex "bcc" ["acc", "bac", "ccc"]
+    , Vertex "ccc" ["acc", "bcc"]
+  ]
 
 --            current graph   goal     path
 type State = (String, (Graph, String, [Vertex]))
-
--- findRoutes :: State -> IO ()
--- findRoutes (current, (graph, goal, path))
---   | current == goal = putStrLn $ ("path found") ++ show (map vertexLabel (path ++ graphVertexes graph [current]))
---   | otherwise = do
---       let currentVertex = head (graphVertexes graph [current])
---       let neighboursOfCurrentAsVertexes = graphVertexes graph (vertexNeighbors currentVertex)
---       let unvisited = [x | x <- neighboursOfCurrentAsVertexes, not $ elem (vertexLabel x) (map vertexLabel path)]
---       let newPath = path ++ [currentVertex]
---       let newStates = zip (map vertexLabel unvisited) (repeat (graph, goal, newPath))
---       mapM_ findRoutes newStates
---       return ()
 
 type Path = [Vertex]
 
@@ -137,8 +90,10 @@ printPaths (x:xs) = do
 
 printPath :: Path -> IO()
 printPath [] = return ()
+printPath [x] = putStrLn $ vertexLabel x
 printPath (x:xs) = do
-  putStrLn $ vertexLabel x
+  putStr $ vertexLabel x
+  putStr " -> "
   printPath xs
 
 findPaths :: State -> [Path]
@@ -146,22 +101,22 @@ findPaths (current, (graph, goal, path))
   | current == goal = [path ++ [head (graphVertexes graph [current])]]
   | otherwise = foldl (++) [] (map findPaths newStates)
       where
-        -- get the current vertex as a vertex from its label
-        currentVertex = head (graphVertexes graph [current])
-        -- make a list of all the current vertexes direct neighbours
-        neighboursOfCurrentAsVertexes = graphVertexes graph (vertexNeighbors currentVertex)
+        -- get the current vertex from its label
+        [currentVertex] = graphVertexes graph [current]
+        -- make a list of all current's neighbours
+        neighbourVertexes = graphVertexes graph (vertexNeighbors currentVertex)
         -- remove already visited vertexes from the list to remove cycles in the graph
-        unvisited = [x | x <- neighboursOfCurrentAsVertexes, not $ elem (vertexLabel x) (map vertexLabel path)]
+        unvisited = [x | x <- neighbourVertexes, not $ elem (vertexLabel x) (map vertexLabel path)]
         -- add the current vertex to the path so far
         newPath = path ++ [currentVertex]
-        -- try to find a path to the goal from all the current vertexes neighbours
+        -- find a path to the goal from all current's neighbours
         newStates = zip (map vertexLabel unvisited) (repeat (graph, goal, newPath))
 
 shortestPath :: [Path] -> Path
 shortestPath [x] = x
-shortestPath (x:xs)
-  | (length x) <= length (shortestPath xs) = x
-  | otherwise = shortestPath xs
+shortestPath (x:x':xs)
+  | length x < length x' = shortestPath (x:xs)
+  | otherwise = shortestPath (x':xs)
 
 remove' :: [Vertex] -> [Vertex] -> [Vertex]
 remove' [] ys = ys
