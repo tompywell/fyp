@@ -1,3 +1,3 @@
-# Changelog for playground
+# Changelog for misc
 
 ## Unreleased changes

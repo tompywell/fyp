@@ -1,3 +1,3 @@
-# Changelog for pointers
+# Changelog for morris
 
 ## Unreleased changes
