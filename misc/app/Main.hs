@@ -1,3 +1,6 @@
+-- this is a collection of many small functions i used for testing intermediateStates
+-- most are pretty obvious, some not so much
+
 module Main where
 
 import Lib

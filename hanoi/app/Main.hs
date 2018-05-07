@@ -4,11 +4,13 @@ import Lib
 
 main :: IO ()
 main = do
-  return ()
+  putStrLn $ show $ hanoi 5 "a" "b" "c"
+  putStrLn $ show $ disks 5
 
 type Peg = String
 type Move = (Peg, Peg)
 
+-- classic recursive solution to Tower of Hanoi
 hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
 hanoi 0 _ _ _ = []
 hanoi n src dest aux =
@@ -16,9 +18,7 @@ hanoi n src dest aux =
   [(src, dest)] ++
   (hanoi (n-1) aux dest src)
 
-countMoves :: Integer -> IO ()
-countMoves n =  putStrLn $ show $ length $ hanoi n "a" "b" "c"
-
+-- shows the disks involved in mves, rather than the pegs
 disks :: Int -> [Int]
 disks 0 = []
 disks n =

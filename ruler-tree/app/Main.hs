@@ -3,7 +3,10 @@ module Main where
 import Lib
 
 main :: IO ()
-main = someFunc
+main = do
+  let tree = makeTree 5
+  putStrLn $ show $ bf tree
+  putStrLn $ show $ df tree
 
 -- assuming the tree is 'full' to a certain depth
 inOrderDepths :: Int -> [Int]
@@ -19,13 +22,16 @@ makeTree :: Int -> Tree
 makeTree 1 = Node Empty 1 Empty
 makeTree n = Node (makeTree (n-1)) n (makeTree (n-1))
 
+-- depth-first search
 df :: Tree -> [Int]
 df Empty = []
 df (Node left val right) = df left ++ [val] ++ df right
 
+-- bredth-first search
 bf :: Tree -> [Int]
 bf tree = bf' [tree]
 
+-- helper
 bf' :: [Tree] -> [Int]
 bf' [] = []
 bf' xs = map getVal xs ++ bf' (foo xs)

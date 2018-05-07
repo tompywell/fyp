@@ -2,25 +2,20 @@ module Main where
 
 import Lib
 
+-- a vertex has a name and a list of neighbours
 data Vertex = Vertex {
                           vertexLabel :: [Char]
                         , vertexNeighbors :: [[Char]]
                       } deriving (Show)
 
--- We define a graph as a list of vertexes.
--- Each vertex is a label, and neighbours.
+--  a graph is just a list of vertexes
 data Graph = Graph [Vertex] deriving (Show)
 
--- Takes in a vertex, a list of vertexes, and returns true or false.
-vertexInVertexes :: Vertex -> [Vertex] -> Bool
-vertexInVertexes _ [] = False
--- If at least one vertex label in the list matches the input vertex label, the result will be true.
-vertexInVertexes Vertex {vertexLabel = label} (x:y) = foldl (\ acc x -> vertexLabel x == label || acc) False (x:y)
-
+-- gets a list of vertexes from a graph using there labels
 graphVertexes :: Graph -> [[Char]]-> [Vertex]
 graphVertexes (Graph []) _ = []
-graphVertexes (Graph (x:y)) [] = x : y
-graphVertexes (Graph (x:y)) keys = filter (\ z -> vertexLabel z `elem` keys) (x:y)
+graphVertexes (Graph (x:xs)) [] = x : xs
+graphVertexes (Graph (x:xs)) labels = filter (\ z -> elem (vertexLabel z) labels) (x:xs)
 
 main :: IO ()
 main = do
@@ -29,18 +24,17 @@ main = do
   let graph = threeDisk
   let state = (startState, (graph, goalState, []))
   printPath $ shortestPath $ findPaths state
-  return ()
 
 -- twoDisk = Graph [
---       Vertex "aa" ["ba", "ca"        ] 0
---     , Vertex "ab" ["bb", "ac", "cb"  ] 0
---     , Vertex "ac" ["bc", "ab", "cc"  ] 0
---     , Vertex "ba" ["aa", "ca", "bc"  ] 0
---     , Vertex "bb" ["ab", "cb"        ] 0
---     , Vertex "bc" ["ac", "cc", "ba"  ] 0
---     , Vertex "ca" ["cb", "aa", "ba"  ] 0
---     , Vertex "cb" ["ab", "bb", "ca"  ] 0
---     , Vertex "cc" ["ac", "bc"        ] 0
+--       Vertex "aa" ["ba", "ca"        ]
+--     , Vertex "ab" ["bb", "ac", "cb"  ]
+--     , Vertex "ac" ["bc", "ab", "cc"  ]
+--     , Vertex "ba" ["aa", "ca", "bc"  ]
+--     , Vertex "bb" ["ab", "cb"        ]
+--     , Vertex "bc" ["ac", "cc", "ba"  ]
+--     , Vertex "ca" ["cb", "aa", "ba"  ]
+--     , Vertex "cb" ["ab", "bb", "ca"  ]
+--     , Vertex "cc" ["ac", "bc"        ]
 --   ]
 
 threeDisk = Graph [
@@ -75,11 +69,12 @@ threeDisk = Graph [
     , Vertex "ccc" ["acc", "bcc"]
   ]
 
---            current graph   goal     path
+--            current, graph  goal    path
 type State = (String, (Graph, String, [Vertex]))
 
 type Path = [Vertex]
 
+-- prints multiple paths
 printPaths :: [Path] -> IO ()
 printPaths [] = return ()
 printPaths (x:xs) = do
@@ -88,51 +83,43 @@ printPaths (x:xs) = do
   putStrLn "PATHEND"
   printPaths xs
 
+-- prints a single path
 printPath :: Path -> IO()
 printPath [] = return ()
 printPath [x] = putStrLn $ vertexLabel x
 printPath (x:xs) = do
-  putStr $ vertexLabel x
-  putStr " -> "
+  putStr $ vertexLabel x ++ " -> "
   printPath xs
 
+-- an algorithm to find all possible paths from one node to another, without cycles (otherwise infinte)
 findPaths :: State -> [Path]
 findPaths (current, (graph, goal, path))
+  -- if we are at the goal node, return the path to get here
   | current == goal = [path ++ [head (graphVertexes graph [current])]]
+  -- if not at goal, visit all neighbours and search from there
   | otherwise = foldl (++) [] (map findPaths newStates)
       where
         -- get the current vertex from its label
         [currentVertex] = graphVertexes graph [current]
         -- make a list of all current's neighbours
         neighbourVertexes = graphVertexes graph (vertexNeighbors currentVertex)
-        -- remove already visited vertexes from the list to remove cycles in the graph
+        -- remove already visited vertexes from the list of neighbours to remove cycles in the path
         unvisited = [x | x <- neighbourVertexes, not $ elem (vertexLabel x) (map vertexLabel path)]
-        -- add the current vertex to the path so far
+        -- add the current vertex to the path
         newPath = path ++ [currentVertex]
         -- find a path to the goal from all current's neighbours
         newStates = zip (map vertexLabel unvisited) (repeat (graph, goal, newPath))
 
+-- given a list of all paths, this finds a shortest
 shortestPath :: [Path] -> Path
 shortestPath [x] = x
 shortestPath (x:x':xs)
   | length x < length x' = shortestPath (x:xs)
   | otherwise = shortestPath (x':xs)
 
-remove' :: [Vertex] -> [Vertex] -> [Vertex]
-remove' [] ys = ys
-remove' _ [] = []
-remove' (x:xs) (ys) = remove' xs (remove x ys)
-
-remove :: Vertex -> [Vertex] -> [Vertex]
-remove _ [] = []
-remove v (x:xs)
-  | vertexLabel v == vertexLabel x = rest
-  | otherwise = v : rest
-  where rest = remove v xs
-
 -- An impure function that takes a graph and performs input/output (IO).
 printGraph :: Graph -> IO ()
-printGraph (Graph []) = putStrLn ""
+printGraph (Graph []) = return ()
 printGraph (Graph (x:y)) = do
   -- Print the first vertex.
   print x
